@@ -366,6 +366,7 @@ summary:focus-visible {
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid transparent;
   transition: border-color var(--transition-base), background-color var(--transition-base);
+  transform: translateZ(0);
 }
 
 .navbar.is-scrolled {
@@ -1035,6 +1036,9 @@ summary:focus-visible {
   display: flex;
   align-items: center;
   padding-block: var(--space-8);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .trainers-viewport {
