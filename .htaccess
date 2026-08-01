@@ -1,0 +1,71 @@
+# =========================================================
+# Hot Springs Gym Karlovy Vary — .htaccess
+# Přesměrování http -> https řeší hosting, zde neřešeno.
+# =========================================================
+
+RewriteEngine On
+
+# ---------------------------------------------------------
+# 1) Kanonická doména: www -> bez www
+# ---------------------------------------------------------
+RewriteCond %{HTTP_HOST} ^www\.hsgym\.cz$ [NC]
+RewriteRule ^(.*)$ https://hsgym.cz/$1 [L,R=301]
+
+# ---------------------------------------------------------
+# 2) Čisté URL bez .html
+# ---------------------------------------------------------
+
+# 2a) 301 redirect z *.html na čistou URL (mimo 404.html)
+RewriteCond %{THE_REQUEST} \s/+([^?]+)\.html[\s?] [NC]
+RewriteCond %1 !^404$ [NC]
+RewriteRule ^ /%1 [R=301,L]
+
+# 2b) Interní přepis čisté URL na odpovídající .html soubor, pokud existuje
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+RewriteRule ^([^.]+)$ $1.html [L]
+
+# ---------------------------------------------------------
+# 3) Vlastní chybová stránka 404
+# ---------------------------------------------------------
+ErrorDocument 404 /404.html
+
+# ---------------------------------------------------------
+# 4) Bezpečnostní hlavičky
+# ---------------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' https://early.webawesome.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; frame-src https://maps.google.com https://www.google.com; connect-src 'self' https://formspree.io; base-uri 'self'; form-action 'self' https://formspree.io; frame-ancestors 'self'; object-src 'none'"
+  Header unset X-Powered-By
+  Header unset Server
+</IfModule>
+
+# ---------------------------------------------------------
+# 5) Zakázat prohlížení adresářů a přístup ke skrytým/systémovým souborům
+# ---------------------------------------------------------
+Options -Indexes
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# ---------------------------------------------------------
+# 6) Komprese a cache statického obsahu (výkon)
+# ---------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
